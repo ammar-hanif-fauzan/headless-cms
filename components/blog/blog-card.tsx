@@ -4,13 +4,29 @@ import { Clock, ArrowRight } from "lucide-react"
 interface BlogPost {
   id: number
   title: string
-  excerpt: string
-  category: string
-  author: string | { name: string; avatar: string; bio: string }
-  date: string
-  readTime: number
-  image: string
   slug: string
+  content: string
+  thumbnail: string
+  featured_image: string
+  created_at: string
+  published_at: string
+  category: {
+    id: number
+    name: string
+    slug: string
+  }
+  author: {
+    id: number
+    name: string
+    username: string | null
+    avatar: string | null
+  }
+  tags: Array<{
+    id: number
+    name: string
+    slug: string
+  }>
+  bookmark_count: number
 }
 
 interface BlogCardProps {
@@ -24,7 +40,7 @@ export function BlogCard({ post }: BlogCardProps) {
         {/* Image */}
         <div className="relative aspect-video overflow-hidden bg-muted">
           <img
-            src={post.image || "/placeholder.svg"}
+            src={post.thumbnail || post.featured_image || "/placeholder.svg"}
             alt={post.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -35,11 +51,11 @@ export function BlogCard({ post }: BlogCardProps) {
           {/* Category */}
           <div className="mb-3 flex items-center gap-2">
             <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {post.category}
+              {post.category.name}
             </span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
-              {post.readTime} min
+              {Math.ceil(post.content.length / 1000)} min read
             </span>
           </div>
 
@@ -48,17 +64,19 @@ export function BlogCard({ post }: BlogCardProps) {
             {post.title}
           </h3>
 
-          {/* Excerpt */}
-          <p className="mb-4 flex-1 line-clamp-3 text-sm text-muted-foreground leading-relaxed">{post.excerpt}</p>
+          {/* Content Preview */}
+          <p className="mb-4 flex-1 line-clamp-3 text-sm text-muted-foreground leading-relaxed">
+            {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+          </p>
 
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-border pt-4">
             <div className="flex flex-col">
               <p className="text-sm font-medium text-foreground">
-                {typeof post.author === 'string' ? post.author : post.author.name}
+                {post.author.name}
               </p>
               <p className="text-xs text-muted-foreground">
-                {new Date(post.date).toLocaleDateString("id-ID", {
+                {new Date(post.published_at).toLocaleDateString("id-ID", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",

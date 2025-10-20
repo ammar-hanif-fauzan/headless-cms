@@ -1,37 +1,16 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { BlogCard } from "@/components/blog/blog-card"
 import { BlogPagination } from "@/components/blog/blog-pagination"
-import { getAllBlogPosts } from "@/lib/blog-data"
+import { getAllBlogPosts, BlogPost } from "@/lib/api"
 import { Search, X, Calendar, Tag, User, Settings } from "lucide-react"
 
-// Ambil data dari lib/blog-data.ts
-const blogPosts = getAllBlogPosts()
-
-// Interface untuk blog post
-interface BlogPost {
-  id: number
-  title: string
-  excerpt: string
-  category: string
-  author: {
-    name: string
-    avatar: string
-    bio: string
-  }
-  date: string
-  readTime: number
-  image: string
-  slug: string
-  tags: string[]
-}
-
-const categories = ["All", "Next.js", "React", "CSS", "TypeScript", "Web Dev", "Laravel", "Vue.js", "Node.js", "Python"]
-const allTags = ["Next.js", "React", "JavaScript", "Frontend", "Server Components", "Performance", "CSS", "Tailwind", "Styling", "TypeScript", "Programming", "Best Practices", "Web Dev", "Optimization", "Grid", "Flexbox", "Layout", "Patterns", "Advanced", "API", "Backend", "Full Stack", "Laravel", "PHP", "Framework", "Vue.js", "Composition API", "Node.js", "Python", "Django", "Flask"]
 const POSTS_PER_PAGE = 6
 
 export default function BlogPage() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("All")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -40,19 +19,47 @@ export default function BlogPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
 
+  // Ambil data dari API saat komponen mount
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        setLoading(true)
+        const posts = await getAllBlogPosts()
+        setBlogPosts(posts)
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogPosts()
+  }, [])
+
+  // Ambil categories dan tags dari data API
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(blogPosts.map(post => post.category.name)))
+    return ["All", ...uniqueCategories]
+  }, [blogPosts])
+
+  const allTags = useMemo(() => {
+    const uniqueTags = Array.from(new Set(blogPosts.flatMap(post => post.tags.map(tag => tag.name))))
+    return uniqueTags
+  }, [blogPosts])
+
   const filteredPosts = useMemo(() => {
     return blogPosts.filter((post) => {
-      const matchesCategory = activeCategory === "All" || post.category === activeCategory
+      const matchesCategory = activeCategory === "All" || post.category.name === activeCategory
       const matchesSearch =
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.author.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => post.tags.includes(tag))
+      const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => post.tags.some(t => t.name === tag))
       const matchesAuthor = selectedAuthor === "" || post.author.name.toLowerCase().includes(selectedAuthor.toLowerCase())
       
       return matchesCategory && matchesSearch && matchesTags && matchesAuthor
     })
-  }, [searchQuery, activeCategory, selectedTags, selectedAuthor])
+  }, [blogPosts, searchQuery, activeCategory, selectedTags, selectedAuthor])
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
   const paginatedPosts = useMemo(() => {
@@ -91,6 +98,31 @@ export default function BlogPage() {
     setSelectedAuthor("")
     setDateRange("")
     setCurrentPage(1)
+  }
+
+  if (loading) {
+    return (
+      <main>
+        <div className="bg-gradient-to-br from-background via-background to-primary/5 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">Blog Articles</h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Discover in-depth articles, tutorials, and insights about web development
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading articles...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (

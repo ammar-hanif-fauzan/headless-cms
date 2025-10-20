@@ -3,7 +3,7 @@ import { BlogContent } from "@/components/blog/blog-content"
 import { BlogAuthor } from "@/components/blog/blog-author"
 import { RelatedPosts } from "@/components/blog/related-posts"
 import { BlogShare } from "@/components/blog/blog-share"
-import { getBlogPostBySlug, getRelatedPosts } from "@/lib/blog-data"
+import { getBlogPostBySlug, getRelatedPosts, BlogPost } from "@/lib/api"
 import Link from "next/link"
 import { ChevronLeft, Tag } from "lucide-react"
 import { notFound } from "next/navigation"
@@ -16,17 +16,17 @@ interface BlogDetailPageProps {
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params
-  const blogPostDetail = getBlogPostBySlug(slug)
+  const blogPostDetail = await getBlogPostBySlug(slug)
   
   // Jika blog post tidak ditemukan, tampilkan 404
   if (!blogPostDetail) {
     notFound()
   }
   
-  const relatedPosts = getRelatedPosts(slug)
+  const relatedPosts = await getRelatedPosts(slug)
   return (
     <main>
-      <BlogDetailHeader image={blogPostDetail.image} />
+      <BlogDetailHeader image={blogPostDetail.featured_image || blogPostDetail.thumbnail} />
 
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back Button */}
@@ -43,12 +43,14 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           <header className="mb-8">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {blogPostDetail.category}
+                {blogPostDetail.category.name}
               </span>
-              <span className="text-xs text-muted-foreground">{blogPostDetail.readTime} min read</span>
+              <span className="text-xs text-muted-foreground">{Math.ceil(blogPostDetail.content.length / 1000)} min read</span>
             </div>
             <h1 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">{blogPostDetail.title}</h1>
-            <p className="text-base text-muted-foreground sm:text-lg">{blogPostDetail.excerpt}</p>
+            <p className="text-base text-muted-foreground sm:text-lg">
+              {blogPostDetail.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
+            </p>
           </header>
 
           {/* Tags Section */}
@@ -60,7 +62,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
                 >
                   <Tag className="h-3 w-3" />
-                  {tag}
+                  {tag.name}
                 </span>
               ))}
             </div>
@@ -70,11 +72,18 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           <BlogShare 
             title={blogPostDetail.title}
             url={`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/blog/${blogPostDetail.slug}`}
-            excerpt={blogPostDetail.excerpt}
+            excerpt={blogPostDetail.content.replace(/<[^>]*>/g, '').substring(0, 200)}
           />
 
           {/* Author Info */}
-          <BlogAuthor author={blogPostDetail.author} date={blogPostDetail.date} />
+          <BlogAuthor 
+            author={{
+              name: blogPostDetail.author.name,
+              avatar: blogPostDetail.author.avatar || "/avatar-john.png",
+              bio: "Author"
+            }} 
+            date={blogPostDetail.published_at} 
+          />
 
           {/* Content */}
           <BlogContent content={blogPostDetail.content} />

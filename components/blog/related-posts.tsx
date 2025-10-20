@@ -5,8 +5,12 @@ interface RelatedPost {
   id: number
   title: string
   slug: string
-  category: string
-  date: string
+  category: {
+    id: number
+    name: string
+    slug: string
+  }
+  published_at: string
 }
 
 interface RelatedPostsProps {
@@ -26,13 +30,13 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
           >
             <div className="flex-1">
               <div className="mb-2 inline-block rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                {post.category}
+                {post.category.name}
               </div>
               <h3 className="line-clamp-2 font-semibold text-foreground transition-colors group-hover:text-primary">
                 {post.title}
               </h3>
               <p className="mt-2 text-xs text-muted-foreground">
-                {new Date(post.date).toLocaleDateString("id-ID", {
+                {new Date(post.published_at).toLocaleDateString("id-ID", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
