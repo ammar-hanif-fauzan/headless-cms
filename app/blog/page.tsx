@@ -3,155 +3,29 @@
 import { useState, useMemo } from "react"
 import { BlogCard } from "@/components/blog/blog-card"
 import { BlogPagination } from "@/components/blog/blog-pagination"
+import { getAllBlogPosts } from "@/lib/blog-data"
 import { Search, X, Calendar, Tag, User, Settings } from "lucide-react"
 
-// Mock data - ganti dengan data dari database/API
-const blogPosts = [
-  {
-    id: 1,
-    title: "Getting Started with Next.js 15",
-    excerpt: "Pelajari fitur-fitur terbaru Next.js 15 dan bagaimana menggunakannya dalam project Anda.",
-    category: "Next.js",
-    author: "John Doe",
-    date: "2025-10-15",
-    readTime: 5,
-    image: "/nextjs-logo.png",
-    slug: "getting-started-nextjs-15",
-    tags: ["Next.js", "React", "JavaScript", "Frontend"],
-  },
-  {
-    id: 2,
-    title: "React Server Components Deep Dive",
-    excerpt: "Memahami konsep React Server Components dan bagaimana mengoptimalkan performa aplikasi Anda.",
-    category: "React",
-    author: "Jane Smith",
-    date: "2025-10-14",
-    readTime: 8,
-    image: "/react-logo-abstract.png",
-    slug: "react-server-components-deep-dive",
-    tags: ["React", "Server Components", "Performance", "Frontend"],
-  },
-  {
-    id: 3,
-    title: "Tailwind CSS Tips & Tricks",
-    excerpt: "Kumpulan tips dan trik menggunakan Tailwind CSS untuk membuat UI yang lebih efisien.",
-    category: "CSS",
-    author: "Mike Johnson",
-    date: "2025-10-13",
-    readTime: 6,
-    image: "/abstract-tailwind.png",
-    slug: "tailwind-css-tips-tricks",
-    tags: ["CSS", "Tailwind", "Styling", "Frontend"],
-  },
-  {
-    id: 4,
-    title: "TypeScript Best Practices",
-    excerpt: "Praktik terbaik menggunakan TypeScript untuk membuat kode yang lebih aman dan maintainable.",
-    category: "TypeScript",
-    author: "Sarah Williams",
-    date: "2025-10-12",
-    readTime: 7,
-    image: "/typescript-logo.png",
-    slug: "typescript-best-practices",
-    tags: ["TypeScript", "JavaScript", "Programming", "Best Practices"],
-  },
-  {
-    id: 5,
-    title: "Web Performance Optimization",
-    excerpt: "Strategi dan teknik untuk mengoptimalkan performa website Anda agar lebih cepat.",
-    category: "Web Dev",
-    author: "Alex Brown",
-    date: "2025-10-11",
-    readTime: 9,
-    image: "/stage-performance.png",
-    slug: "web-performance-optimization",
-    tags: ["Performance", "Web Dev", "Optimization", "Frontend"],
-  },
-  {
-    id: 6,
-    title: "CSS Grid vs Flexbox",
-    excerpt: "Perbandingan mendalam antara CSS Grid dan Flexbox untuk layout yang sempurna.",
-    category: "CSS",
-    author: "Emma Davis",
-    date: "2025-10-10",
-    readTime: 6,
-    image: "/css-grid.jpg",
-    slug: "css-grid-vs-flexbox",
-    tags: ["CSS", "Grid", "Flexbox", "Layout"],
-  },
-  {
-    id: 7,
-    title: "Advanced React Patterns",
-    excerpt: "Pelajari pattern-pattern advanced di React untuk membuat aplikasi yang scalable.",
-    category: "React",
-    author: "Chris Wilson",
-    date: "2025-10-09",
-    readTime: 10,
-    image: "/react-patterns.jpg",
-    slug: "advanced-react-patterns",
-    tags: ["React", "Patterns", "Advanced", "Frontend"],
-  },
-  {
-    id: 8,
-    title: "Next.js API Routes Mastery",
-    excerpt: "Kuasai API Routes di Next.js untuk membuat backend yang powerful dan efisien.",
-    category: "Next.js",
-    author: "Lisa Anderson",
-    date: "2025-10-08",
-    readTime: 8,
-    image: "/nextjs-api.jpg",
-    slug: "nextjs-api-routes-mastery",
-    tags: ["Next.js", "API", "Backend", "Full Stack"],
-  },
-  {
-    id: 9,
-    title: "Laravel 11 New Features",
-    excerpt: "Jelajahi fitur-fitur baru di Laravel 11 yang akan meningkatkan produktivitas development Anda.",
-    category: "Laravel",
-    author: "Ahmad Surya",
-    date: "2025-10-07",
-    readTime: 6,
-    image: "/placeholder.jpg",
-    slug: "laravel-11-new-features",
-    tags: ["Laravel", "PHP", "Backend", "Framework"],
-  },
-  {
-    id: 10,
-    title: "Vue.js 3 Composition API",
-    excerpt: "Pelajari cara menggunakan Composition API di Vue.js 3 untuk development yang lebih efisien.",
-    category: "Vue.js",
-    author: "Maria Rizki",
-    date: "2025-10-06",
-    readTime: 7,
-    image: "/placeholder.jpg",
-    slug: "vuejs-3-composition-api",
-    tags: ["Vue.js", "JavaScript", "Frontend", "Composition API"],
-  },
-  {
-    id: 11,
-    title: "Node.js Performance Tips",
-    excerpt: "Tips dan trik untuk mengoptimalkan performa aplikasi Node.js Anda.",
-    category: "Node.js",
-    author: "Dani Pratama",
-    date: "2025-10-05",
-    readTime: 8,
-    image: "/placeholder.jpg",
-    slug: "nodejs-performance-tips",
-    tags: ["Node.js", "JavaScript", "Backend", "Performance"],
-  },
-  {
-    id: 12,
-    title: "Python for Web Development",
-    excerpt: "Panduan lengkap menggunakan Python untuk web development dengan Django dan Flask.",
-    category: "Python",
-    author: "Siti Aminah",
-    date: "2025-10-04",
-    readTime: 9,
-    image: "/placeholder.jpg",
-    slug: "python-web-development",
-    tags: ["Python", "Django", "Flask", "Backend"],
-  },
-]
+// Ambil data dari lib/blog-data.ts
+const blogPosts = getAllBlogPosts()
+
+// Interface untuk blog post
+interface BlogPost {
+  id: number
+  title: string
+  excerpt: string
+  category: string
+  author: {
+    name: string
+    avatar: string
+    bio: string
+  }
+  date: string
+  readTime: number
+  image: string
+  slug: string
+  tags: string[]
+}
 
 const categories = ["All", "Next.js", "React", "CSS", "TypeScript", "Web Dev", "Laravel", "Vue.js", "Node.js", "Python"]
 const allTags = ["Next.js", "React", "JavaScript", "Frontend", "Server Components", "Performance", "CSS", "Tailwind", "Styling", "TypeScript", "Programming", "Best Practices", "Web Dev", "Optimization", "Grid", "Flexbox", "Layout", "Patterns", "Advanced", "API", "Backend", "Full Stack", "Laravel", "PHP", "Framework", "Vue.js", "Composition API", "Node.js", "Python", "Django", "Flask"]
@@ -172,9 +46,9 @@ export default function BlogPage() {
       const matchesSearch =
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchQuery.toLowerCase())
+        post.author.name.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => post.tags.includes(tag))
-      const matchesAuthor = selectedAuthor === "" || post.author.toLowerCase().includes(selectedAuthor.toLowerCase())
+      const matchesAuthor = selectedAuthor === "" || post.author.name.toLowerCase().includes(selectedAuthor.toLowerCase())
       
       return matchesCategory && matchesSearch && matchesTags && matchesAuthor
     })

@@ -6,7 +6,7 @@ interface BlogPost {
   title: string
   excerpt: string
   category: string
-  author: string
+  author: string | { name: string; avatar: string; bio: string }
   date: string
   readTime: number
   image: string
@@ -54,7 +54,9 @@ export function BlogCard({ post }: BlogCardProps) {
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-border pt-4">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-foreground">{post.author}</p>
+              <p className="text-sm font-medium text-foreground">
+                {typeof post.author === 'string' ? post.author : post.author.name}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {new Date(post.date).toLocaleDateString("id-ID", {
                   year: "numeric",
