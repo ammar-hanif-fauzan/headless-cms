@@ -80,14 +80,29 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 // Fungsi untuk mengambil blog post berdasarkan slug
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/blogs/${slug}`, {
+    // Coba endpoint dengan slug terlebih dahulu
+    let response = await fetch(`${API_BASE_URL}/blogs/${slug}`, {
       cache: 'no-store'
     })
     
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null
+    // Jika endpoint dengan slug tidak ditemukan, coba cari dari semua posts
+    if (!response.ok && response.status === 404) {
+      console.log(`Endpoint /blogs/${slug} not found, trying to find by slug in all posts...`)
+      
+      // Ambil semua posts dan cari berdasarkan slug
+      const allPosts = await getAllBlogPosts()
+      const foundPost = allPosts.find(post => post.slug === slug)
+      
+      if (foundPost) {
+        console.log(`Found post with slug: ${slug}`)
+        return foundPost
       }
+      
+      console.log(`Post with slug ${slug} not found in all posts`)
+      return null
+    }
+    
+    if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     
