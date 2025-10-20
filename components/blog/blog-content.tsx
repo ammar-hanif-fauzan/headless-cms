@@ -21,6 +21,12 @@ export function BlogContent({ content }: BlogContentProps) {
         .prose li {
           @apply text-foreground;
         }
+        .prose a {
+          @apply text-blue-600 underline hover:text-blue-800 transition-colors;
+        }
+        .prose a:visited {
+          @apply text-purple-600;
+        }
         .prose code {
           @apply rounded bg-muted px-2 py-1 font-mono text-sm text-foreground;
         }

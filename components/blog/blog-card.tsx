@@ -66,7 +66,16 @@ export function BlogCard({ post }: BlogCardProps) {
 
           {/* Content Preview */}
           <p className="mb-4 flex-1 line-clamp-3 text-sm text-muted-foreground leading-relaxed">
-            {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+            {post.content
+              .replace(/<[^>]*>/g, '') // Remove HTML tags
+              .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+              .replace(/&amp;/g, '&') // Replace &amp; with &
+              .replace(/&lt;/g, '<') // Replace &lt; with <
+              .replace(/&gt;/g, '>') // Replace &gt; with >
+              .replace(/&quot;/g, '"') // Replace &quot; with "
+              .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+              .trim()
+              .substring(0, 150)}...
           </p>
 
           {/* Footer */}

@@ -53,7 +53,16 @@ export function HomeBlogCard({ post }: HomeBlogCardProps) {
             {post.title}
           </h3>
           <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-            {post.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+            {post.content
+              .replace(/<[^>]*>/g, '') // Remove HTML tags
+              .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+              .replace(/&amp;/g, '&') // Replace &amp; with &
+              .replace(/&lt;/g, '<') // Replace &lt; with <
+              .replace(/&gt;/g, '>') // Replace &gt; with >
+              .replace(/&quot;/g, '"') // Replace &quot; with "
+              .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+              .trim()
+              .substring(0, 100)}...
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">

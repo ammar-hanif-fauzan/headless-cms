@@ -49,7 +49,16 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </div>
             <h1 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">{blogPostDetail.title}</h1>
             <p className="text-base text-muted-foreground sm:text-lg">
-              {blogPostDetail.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
+              {blogPostDetail.content
+                .replace(/<[^>]*>/g, '') // Remove HTML tags
+                .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+                .replace(/&amp;/g, '&') // Replace &amp; with &
+                .replace(/&lt;/g, '<') // Replace &lt; with <
+                .replace(/&gt;/g, '>') // Replace &gt; with >
+                .replace(/&quot;/g, '"') // Replace &quot; with "
+                .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+                .trim()
+                .substring(0, 200)}...
             </p>
           </header>
 
@@ -65,6 +74,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   {tag.name}
                 </span>
               ))}
+            
             </div>
           </div>
 
